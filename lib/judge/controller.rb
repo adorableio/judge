@@ -9,11 +9,11 @@ module Judge
     end
 
     def validation(params)
-      params = normalized_params(params)
-      if params_present?(params) && params_exposed?(params)
-        Validation.new(params)
+      norm_params = normalized_params(params)
+      if params_present?(norm_params) && params_exposed?(norm_params)
+        Validation.new(norm_params)
       else
-        NullValidation.new(params)
+        NullValidation.new(norm_params)
       end
     end
 
@@ -30,12 +30,12 @@ module Judge
       end
 
       def normalized_params(params)
-        params = params.dup.keep_if { |k| REQUIRED_PARAMS.include?(k) }
-        params[:klass]     = find_klass(params[:klass]) if params[:klass]
-        params[:attribute] = params[:attribute].to_sym  if params[:attribute]
-        params[:value]     = URI.decode(params[:value]) if params[:value]
-        params[:kind]      = params[:kind].to_sym       if params[:kind]
-        params
+        params.dup.keep_if { |k| REQUIRED_PARAMS.include?(k) }.tap do |params|
+          params[:klass]     = find_klass(params[:klass]) if params[:klass]
+          params[:attribute] = params[:attribute].to_sym  if params[:attribute]
+          params[:value]     = URI.decode(params[:value]) if params[:value]
+          params[:kind]      = params[:kind].to_sym       if params[:kind]
+        end
       end
 
       def find_klass(name)
