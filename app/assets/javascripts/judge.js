@@ -288,6 +288,29 @@
       return closed(this.value.length ? [] : [messages.blank]);
     },
 
+    // ValidatesTimeliness::ActiveModel::EachValidator::TimelinessValidator
+    timeliness: function(options, messages) {
+      var msgs = [],
+          types = {
+            after: { operator: '>',  message: 'after' },
+            before: { operator: '<',  message: 'before' },
+            on_or_after: { operator: '>=',  message: 'on_or_after' },
+            on_or_before: { operator: '<=',  message: 'on_or_before' }
+          };
+      _(types).each(function(properties, type) {
+        if (_(options).has(type)) {
+          var invalid = operate(new Date(valueFromName(this.name)),
+            properties.operator,
+            new Date(options[type].replace(/-/g, '/'))
+          );
+          if (invalid) {
+            msgs.push(messages[properties.message]);
+          }
+        }
+      }, this);
+      return closed(msgs);
+    },
+
     // ActiveModel::Validations::LengthValidator
     length: function(options, messages) {
       var msgs = [],
