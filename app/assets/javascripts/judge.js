@@ -57,7 +57,22 @@
 
   // eval is used here for stuff like `(3, '<', 4) => '3 < 4' => true`.
   var operate = function(input, operator, validInput) {
-    return eval(input+' '+operator+' '+validInput);
+    switch(operator) {
+      case '>':
+        return input > validInput;
+      case '>=':
+        return input >= validInput;
+      case '<':
+        return input < validInput;
+      case '<=':
+        return input <= validInput;
+      case '==':
+        return input == validInput;
+      case '!=':
+        return input != validInput;
+      default:
+        return eval(input+' '+operator+' '+validInput);
+    }
   };
 
   // Some nifty numerical helpers.
