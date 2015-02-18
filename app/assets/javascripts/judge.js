@@ -57,7 +57,22 @@
 
   // eval is used here for stuff like `(3, '<', 4) => '3 < 4' => true`.
   var operate = function(input, operator, validInput) {
-    return eval(input+' '+operator+' '+validInput);
+    switch(operator) {
+      case '>':
+        return input > validInput;
+      case '>=':
+        return input >= validInput;
+      case '<':
+        return input < validInput;
+      case '<=':
+        return input <= validInput;
+      case '==':
+        return input == validInput;
+      case '!=':
+        return input != validInput;
+      default:
+        return eval(input+' '+operator+' '+validInput);
+    }
   };
 
   // Some nifty numerical helpers.
@@ -286,6 +301,29 @@
     // ActiveModel::Validations::PresenceValidator
     presence: function(options, messages) {
       return closed(this.value.length ? [] : [messages.blank]);
+    },
+
+    // ValidatesTimeliness::ActiveModel::EachValidator::TimelinessValidator
+    timeliness: function(options, messages) {
+      var msgs = [],
+          types = {
+            after: { operator: '>',  message: 'after' },
+            before: { operator: '<',  message: 'before' },
+            on_or_after: { operator: '>=',  message: 'on_or_after' },
+            on_or_before: { operator: '<=',  message: 'on_or_before' }
+          };
+      _(types).each(function(properties, type) {
+        if (_(options).has(type)) {
+          var invalid = operate(new Date(valueFromName(this.name)),
+            properties.operator,
+            new Date(options[type].replace(/-/g, '/'))
+          );
+          if (invalid) {
+            msgs.push(messages[properties.message]);
+          }
+        }
+      }, this);
+      return closed(msgs);
     },
 
     // ActiveModel::Validations::LengthValidator
